@@ -1,0 +1,13 @@
+{
+  "name": "ai-console-agent",
+  "version": "1.0.0",
+  "description": "Simple Claude Code-style echo chat for the terminal",
+  "main": "index.js",
+  "bin": {
+    "echo-chat": "index.js"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "license": "MIT"
+}
