@@ -1,6 +1,7 @@
 const readline = require('node:readline');
 const { askAI } = require('./google-ai');
-const { createMemory } = require('./memory');
+const { createMemory } = require('./memory-repo');
+const { tools } = require('./tools');
 
 // One memory per run of the app, saved to its own file.
 const memory = createMemory();
@@ -44,7 +45,7 @@ rl.on('line', async (line) => {
 
     // Send the whole conversation plus the new message, and wait for the answer.
     try {
-      const answer = await askAI([...memory.all(), { role: 'user', text }]);
+      const answer = await askAI([...memory.all(), { role: 'user', text }], tools);
       console.log('● ' + answer + '\n');
 
       // Remember the pair only after success, so a failed request
