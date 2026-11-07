@@ -1,4 +1,5 @@
 const readline = require('node:readline');
+const { askAI } = require('./google-ai');
 
 // ANSI escape codes: special text the terminal understands as "change color".
 const orange = (s) => `\x1b[38;2;215;119;87m${s}\x1b[0m`;
@@ -13,14 +14,14 @@ const rl = readline.createInterface({
 
 // Welcome banner
 console.log(orange('╭──────────────────────────────╮'));
-console.log(orange('│ ✻ Welcome to Echo Chat!      │'));
+console.log(orange('│ ✻ Welcome to AI Chat!        │'));
 console.log(orange('╰──────────────────────────────╯'));
 console.log(gray('  Type a message, or /exit to quit\n'));
 
 rl.prompt(); // shows "> " and waits for input
 
 // This runs every time the user presses Enter.
-rl.on('line', (line) => {
+rl.on('line', async (line) => {
   const text = line.trim();
 
   if (text === '/exit') {
@@ -34,8 +35,13 @@ rl.on('line', (line) => {
     process.stdout.write('\x1b[1A\x1b[2K');
     console.log(gray('> ' + text) + '\n');
 
-    // The "AI" answer: just echo the message back.
-    console.log('● ' + text + '\n');
+    // Send the message to the AI and wait for the answer.
+    try {
+      const answer = await askAI(text);
+      console.log('● ' + answer + '\n');
+    } catch (error) {
+      console.log(orange('● Error: ' + error.message) + '\n');
+    }
   }
 
   rl.prompt(); // ask for the next message
