@@ -1,5 +1,6 @@
 // Small adapter around Google AI (Gemini API, free tier).
-// Usage:  const answer = await askAI('Hello!');
+// Input: the whole conversation. Output: the AI's next answer as text.
+// Usage:  const answer = await askAI([{ role: 'user', text: 'Hello!' }]);
 
 const fs = require('node:fs');
 const path = require('node:path');
@@ -13,7 +14,7 @@ if (fs.existsSync(envFile)) {
 const MODEL = process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
 const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
-async function askAI(prompt) {
+async function askAI(messages) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error('GEMINI_API_KEY environment variable is not set');
@@ -27,7 +28,11 @@ async function askAI(prompt) {
       'x-goog-api-key': apiKey,
     },
     body: JSON.stringify({
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      // Google calls the AI's role "model".
+      contents: messages.map((message) => ({
+        role: message.role === 'ai' ? 'model' : 'user',
+        parts: [{ text: message.text }],
+      })),
     }),
   });
 

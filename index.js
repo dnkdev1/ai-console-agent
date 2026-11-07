@@ -1,5 +1,9 @@
 const readline = require('node:readline');
 const { askAI } = require('./google-ai');
+const { createMemory } = require('./memory');
+
+// One memory per run of the app, saved to its own file.
+const memory = createMemory();
 
 // ANSI escape codes: special text the terminal understands as "change color".
 const orange = (s) => `\x1b[38;2;215;119;87m${s}\x1b[0m`;
@@ -35,13 +39,23 @@ rl.on('line', async (line) => {
     process.stdout.write('\x1b[1A\x1b[2K');
     console.log(gray('> ' + text) + '\n');
 
-    // Send the message to the AI and wait for the answer.
+    // Stop reading input while waiting, so messages can't get out of order.
+    rl.pause();
+
+    // Send the whole conversation plus the new message, and wait for the answer.
     try {
-      const answer = await askAI(text);
+      const answer = await askAI([...memory.all(), { role: 'user', text }]);
       console.log('● ' + answer + '\n');
+
+      // Remember the pair only after success, so a failed request
+      // doesn't leave a question without an answer in the conversation.
+      memory.add('user', text);
+      memory.add('ai', answer);
     } catch (error) {
       console.log(orange('● Error: ' + error.message) + '\n');
     }
+
+    rl.resume();
   }
 
   rl.prompt(); // ask for the next message
